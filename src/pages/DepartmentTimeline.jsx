@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { TimelineEvent, Department } from "@/api/entities";
-import { Calendar, ChevronLeft, ChevronRight, Grid, List, ArrowLeft, Plus, BarChartHorizontal, Users } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Grid, ArrowLeft, Plus, BarChartHorizontal, Users, TrendingUp } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addWeeks, addMonths, addYears, subWeeks, subMonths, subYears, parseISO } from "date-fns";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -10,7 +10,6 @@ import CalendarView from "../components/timeline/CalendarView";
 import EventCard from "../components/timeline/EventCard";
 import GanttView from "../components/timeline/GanttView";
 import TeamMembersDialog from "../components/departments/TeamMembersDialog";
-import LoginDialog from "../components/auth/LoginDialog";
 
 export default function DepartmentTimeline() {
   const navigate = useNavigate();
@@ -23,7 +22,6 @@ export default function DepartmentTimeline() {
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTeamDialog, setShowTeamDialog] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   const loadData = useCallback(async (departmentName) => {
     try {
@@ -33,6 +31,7 @@ export default function DepartmentTimeline() {
       ]);
       
       const department = departmentsData.find(d => d.name === departmentName);
+      
       if (!department) {
         navigate(createPageUrl("Departments"));
         return;
@@ -82,7 +81,7 @@ export default function DepartmentTimeline() {
     if (timeRange === 'week') {
       return `Week of ${format(startOfWeek(currentDate), 'MMM d, yyyy')}`;
     } else if (timeRange === 'month') {
-      return format(currentDate, 'MMMM yyyy');
+      return format(currentDate, 'MMM yyyy');
     } else if (timeRange === 'quarter') {
       return `Q${Math.floor(currentDate.getMonth() / 3) + 1} ${format(currentDate, 'yyyy')}`;
     } else if (timeRange === 'year') {
@@ -111,11 +110,6 @@ export default function DepartmentTimeline() {
   };
 
   const handleAddEventClick = () => {
-    setShowLoginDialog(true);
-  };
-
-  const handleLoginSuccess = () => {
-    setShowLoginDialog(false);
     if (selectedDepartment) {
       navigate(`${createPageUrl("AddEvent")}?dept=${encodeURIComponent(selectedDepartment.name)}`);
     }
@@ -167,13 +161,23 @@ export default function DepartmentTimeline() {
               </div>
               <p className="text-white/70">Department projects, events, and deadlines</p>
             </div>
-            <button
-              onClick={handleAddEventClick}
-              className="glass-intense rounded-2xl px-4 py-2 text-white font-medium glow-on-hover"
-            >
-              <Plus className="w-4 h-4 mr-2 inline" />
-              Add Event
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleAddEventClick}
+                className="glass-intense rounded-2xl px-4 py-2 text-white font-medium glow-on-hover"
+              >
+                <Plus className="w-4 h-4 mr-2 inline" />
+                Add Event
+              </button>
+              <button
+                onClick={() => {/* TODO: Add peak period functionality */}}
+                className="glass-morphism rounded-2xl px-4 py-2 text-white/80 hover:text-white font-medium glow-on-hover"
+                title="Add Peak Period"
+              >
+                <TrendingUp className="w-4 h-4 mr-2 inline" />
+                Peak Period
+              </button>
+            </div>
           </div>
           
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -220,8 +224,7 @@ export default function DepartmentTimeline() {
               {[
                 { mode: 'timeline', icon: Calendar },
                 { mode: 'gantt', icon: BarChartHorizontal },
-                { mode: 'calendar', icon: Grid },
-                { mode: 'list', icon: List }
+                { mode: 'calendar', icon: Grid }
               ].map(({ mode, icon: Icon }) => (
                 <button
                   key={mode}
@@ -241,6 +244,7 @@ export default function DepartmentTimeline() {
 
         {/* Main Content */}
         <div>
+
           {viewMode === 'timeline' && (
             <TimelineView 
               events={filteredEvents}
@@ -268,34 +272,6 @@ export default function DepartmentTimeline() {
               currentDate={currentDate}
             />
           )}
-          
-          {viewMode === 'list' && (
-            <div className="glass-card rounded-3xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white text-glow">All Events</h2>
-                <span className="glass-morphism rounded-full px-3 py-1 text-sm text-white/70">
-                  {filteredEvents.length} events
-                </span>
-              </div>
-              <div className="space-y-4">
-                {filteredEvents.map((event) => (
-                  <EventCard key={event.id} event={event} departments={departments} />
-                ))}
-                {filteredEvents.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-white/60">No events found for {selectedDepartment.name}</p>
-                    <button
-                      onClick={handleAddEventClick}
-                      className="glass-morphism rounded-2xl px-4 py-2 text-white/80 hover:text-white inline-flex items-center gap-2 mt-4 glow-on-hover"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Add First Event
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -307,12 +283,6 @@ export default function DepartmentTimeline() {
         onClose={() => setShowTeamDialog(false)}
       />
 
-      {/* Login Dialog */}
-      <LoginDialog
-        isOpen={showLoginDialog}
-        onClose={() => setShowLoginDialog(false)}
-        onSuccess={handleLoginSuccess}
-      />
     </div>
   );
 }

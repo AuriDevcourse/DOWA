@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar, Save, ArrowLeft, Tag, Users, CalendarDays, X } from "lucide-react";
+import { Calendar, Save, ArrowLeft, Users, CalendarDays, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
+import DatePicker from "@/components/ui/DatePicker";
 
 const STATUS_OPTIONS = [
   { value: "planning", label: "Planning", color: "text-purple-400" },
@@ -30,9 +31,7 @@ export default function AddEvent() {
   const navigate = useNavigate();
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
-  const [availableTags, setAvailableTags] = useState([]);
-  const [useExactDates, setUseExactDates] = useState(true);
+  const [useExactDates, setUseExactDates] = useState(false);
   const [preselectedDepartment, setPreselectedDepartment] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -44,9 +43,10 @@ export default function AddEvent() {
     department_id: "",
     department_name: "",
     involved_departments: [],
-    tags: [],
+    lead_person: "",
     status: "planning",
-    type: "project"
+    type: "project",
+    priority: "medium"
   });
 
   useEffect(() => {
@@ -57,23 +57,47 @@ export default function AddEvent() {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const deptName = urlParams.get('dept');
+      const eventId = urlParams.get('eventId');
 
-      const [departmentsData, userData, eventsData] = await Promise.all([
-        Department.list(),
-        User.me(),
-        TimelineEvent.list()
-      ]);
-      
+      const departmentsData = await Department.list();
       setDepartments(departmentsData);
-      setUser(userData);
 
-      const tags = new Set();
-      eventsData.forEach(event => {
-        event.tags?.forEach(tag => tags.add(tag));
-      });
-      setAvailableTags(Array.from(tags));
-
-      if (deptName) {
+      // If editing an existing event
+      if (eventId) {
+        try {
+          const eventData = await TimelineEvent.get(eventId);
+          const eventDept = departmentsData.find(d => d.name === eventData.department_name);
+          
+          if (eventDept) {
+            setPreselectedDepartment(eventDept);
+          }
+          
+          setFormData({
+            title: eventData.title || "",
+            description: eventData.description || "",
+            start_date: eventData.start_date || "",
+            end_date: eventData.end_date || "",
+            start_month: eventData.start_date ? eventData.start_date.substring(0, 7) : "",
+            end_month: eventData.end_date ? eventData.end_date.substring(0, 7) : "",
+            department_id: eventDept?.id || "",
+            department_name: eventData.department_name || "",
+            involved_departments: eventData.involved_departments || [],
+            lead_person: eventData.lead_person || "",
+            status: eventData.status || "planning",
+            type: eventData.type || "project",
+            priority: eventData.priority || "medium"
+          });
+          
+          // Set exact dates if available
+          if (eventData.start_date && eventData.end_date) {
+            setUseExactDates(true);
+          }
+        } catch (error) {
+          console.error("Error loading event data:", error);
+        }
+      }
+      // If creating new event with department context
+      else if (deptName) {
         const dept = departmentsData.find(d => d.name === deptName);
         if (dept) {
           setPreselectedDepartment(dept);
@@ -111,13 +135,6 @@ export default function AddEvent() {
     }));
   };
 
-  const handleArrayInput = (field, value) => {
-    const items = value.split(',').map(item => item.trim()).filter(item => item);
-    setFormData(prev => ({
-      ...prev,
-      [field]: items
-    }));
-  };
 
   const formatDateForSubmission = (dateString, isStart = true) => {
     if (useExactDates) {
@@ -150,16 +167,30 @@ export default function AddEvent() {
 
     setLoading(true);
     try {
-      const eventData = {
-        ...formData,
-        start_date: formatDateForSubmission(startDate, true),
-        end_date: endDate ? formatDateForSubmission(endDate, false) : formatDateForSubmission(startDate, false)
-      };
+      const urlParams = new URLSearchParams(window.location.search);
+      const eventId = urlParams.get('eventId');
       
-      delete eventData.start_month;
-      delete eventData.end_month;
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        department_name: formData.department_name,
+        start_date: formatDateForSubmission(startDate, true),
+        end_date: endDate ? formatDateForSubmission(endDate, false) : formatDateForSubmission(startDate, false),
+        involved_departments: formData.involved_departments,
+        lead_person: formData.lead_person,
+        status: formData.status,
+        type: formData.type,
+        priority: formData.priority,
+        tags: [] // Keep empty for now
+      };
 
-      await TimelineEvent.create(eventData);
+      if (eventId) {
+        // Update existing event
+        await TimelineEvent.update(eventId, eventData);
+      } else {
+        // Create new event
+        await TimelineEvent.create(eventData);
+      }
       
       if (preselectedDepartment) {
         navigate(`${createPageUrl("DepartmentTimeline")}?dept=${encodeURIComponent(preselectedDepartment.name)}`);
@@ -167,15 +198,15 @@ export default function AddEvent() {
         navigate(createPageUrl("Dashboard"));
       }
     } catch (error) {
-      console.error("Error creating event:", error);
-      alert("Error creating event. Please try again.");
+      console.error(`Error ${urlParams.get('eventId') ? 'updating' : 'creating'} event:`, error);
+      alert(`Error ${urlParams.get('eventId') ? 'updating' : 'creating'} event. Please try again.`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen px-6 py-8">
+    <div className="min-h-screen px-6 py-8 overflow-x-hidden">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -197,221 +228,201 @@ export default function AddEvent() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-white text-glow">Add New Event</h1>
+              <h1 className="text-3xl font-bold text-white text-glow">
+                {new URLSearchParams(window.location.search).get('eventId') ? 'Edit Event' : 'Add New Event'}
+              </h1>
               <p className="text-white/70 mt-1">
-                {preselectedDepartment 
-                  ? `Create a new timeline item for ${preselectedDepartment.name}`
-                  : "Create a new timeline item for your department"
+                {new URLSearchParams(window.location.search).get('eventId') 
+                  ? `Update timeline event${preselectedDepartment ? ` for ${preselectedDepartment.name}` : ''}`
+                  : preselectedDepartment 
+                    ? `Create a new timeline item for ${preselectedDepartment.name}`
+                    : "Create a new timeline item for your department"
                 }
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-white font-medium">Title *</Label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
-                  placeholder="Project or event title"
-                  className="glass-morphism border-white/20 text-white placeholder:text-white/50"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-white font-medium">Department *</Label>
-                <Select
-                  value={formData.department_id}
-                  onValueChange={(value) => handleInputChange('department_id', value)}
-                >
-                  <SelectTrigger className="glass-morphism border-white/20 text-white">
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept.id} value={dept.id}>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: dept.color }}
-                          />
-                          {dept.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-white font-medium">Type</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value) => handleInputChange('type', value)}
-                >
-                  <SelectTrigger className="glass-morphism border-white/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TYPE_OPTIONS.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-white font-medium">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleInputChange('status', value)}
-                >
-                  <SelectTrigger className="glass-morphism border-white/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        <span className={status.color}>{status.label}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Date Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="exactDates"
-                  checked={useExactDates}
-                  onCheckedChange={setUseExactDates}
-                />
-                <Label htmlFor="exactDates" className="text-white font-medium flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4" />
-                  Use exact dates
-                </Label>
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Essential Information */}
+            <div className="glass-morphism rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Event Details
+              </h3>
               
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-white font-medium">
-                    {useExactDates ? 'Start Date *' : 'Start Month *'}
-                  </Label>
+                  <Label className="text-white font-medium">What's happening? *</Label>
                   <Input
-                    type={useExactDates ? "date" : "month"}
-                    value={useExactDates ? formData.start_date : formData.start_month}
-                    onChange={(e) => handleInputChange(useExactDates ? 'start_date' : 'start_month', e.target.value)}
-                    className="glass-morphism border-white/20 text-white"
+                    value={formData.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    placeholder="e.g., TechBBQ 2025 Planning, Marketing Campaign Launch"
+                    className="glass-morphism border-white/20 text-white placeholder:text-white/50 text-lg"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white font-medium">
-                    {useExactDates ? 'End Date' : 'End Month'}
-                  </Label>
-                  <Input
-                    type={useExactDates ? "date" : "month"}
-                    value={useExactDates ? formData.end_date : formData.end_month}
-                    onChange={(e) => handleInputChange(useExactDates ? 'end_date' : 'end_month', e.target.value)}
-                    className="glass-morphism border-white/20 text-white"
+                  <Label className="text-white font-medium">Brief description (optional)</Label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="Quick overview of what this event involves..."
+                    className="glass-morphism border-white/20 text-white placeholder:text-white/50 h-20"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-white font-medium">Description</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Detailed description or comments..."
-                className="glass-morphism border-white/20 text-white placeholder:text-white/50 h-24"
-              />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-white font-medium flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Involved Departments
-                </Label>
-                <div className="glass-morphism border-white/20 rounded-lg p-4">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {formData.involved_departments.map((dept) => (
-                      <span
-                        key={dept}
-                        className="glass-morphism rounded-full px-3 py-1 text-sm text-white flex items-center gap-2"
-                      >
-                        {dept}
-                        <button
-                          type="button"
-                          onClick={() => toggleInvolvedDepartment(dept)}
-                          className="hover:text-red-400"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="space-y-2">
-                    {departments
-                      .filter(dept => dept.name !== formData.department_name && !formData.involved_departments.includes(dept.name))
-                      .map((dept) => (
-                        <button
-                          key={dept.id}
-                          type="button"
-                          onClick={() => toggleInvolvedDepartment(dept.name)}
-                          className="glass-morphism rounded-lg p-2 text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-2 w-full text-left"
-                        >
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: dept.color }}
-                          />
-                          {dept.name}
-                        </button>
+            {/* Department & Lead */}
+            <div className="glass-morphism rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Ownership
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-white font-medium">Primary Department *</Label>
+                  <Select
+                    value={formData.department_id}
+                    onValueChange={(value) => handleInputChange('department_id', value)}
+                  >
+                    <SelectTrigger className="glass-morphism border-white/20 text-white">
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent className="glass-morphism border-white/20 bg-slate-900/95 backdrop-blur-md max-h-60 overflow-y-auto">
+                      {departments.map((dept) => (
+                        <SelectItem key={dept.id} value={dept.id} className="text-white hover:bg-white/10 focus:bg-white/10">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: dept.color }}
+                            />
+                            {dept.name}
+                          </div>
+                        </SelectItem>
                       ))}
-                  </div>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-medium">Who's leading this?</Label>
+                  <Input
+                    value={formData.lead_person}
+                    onChange={(e) => handleInputChange('lead_person', e.target.value)}
+                    placeholder="e.g., Maria Krupa, Avnit Singh"
+                    className="glass-morphism border-white/20 text-white placeholder:text-white/50"
+                  />
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label className="text-white font-medium flex items-center gap-2">
-                  <Tag className="w-4 h-4" />
-                  Tags
-                </Label>
-                <Input
-                  value={formData.tags.join(', ')}
-                  onChange={(e) => handleArrayInput('tags', e.target.value)}
-                  placeholder="launch, campaign, meeting (comma-separated)"
-                  className="glass-morphism border-white/20 text-white placeholder:text-white/50"
-                />
-                {availableTags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {availableTags.slice(0, 6).map((tag) => (
-                      <span
-                        key={tag}
-                        onClick={() => {
-                          if (!formData.tags.includes(tag)) {
-                            setFormData(prev => ({
-                              ...prev,
-                              tags: [...prev.tags, tag]
-                            }));
-                          }
-                        }}
-                        className="glass-morphism rounded-full px-2 py-1 text-xs text-white/70 cursor-pointer hover:text-white hover:bg-white/10"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+            {/* Timeline */}
+            <div className="glass-morphism rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <CalendarDays className="w-5 h-5" />
+                When is this happening?
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id="exactDates"
+                    checked={useExactDates}
+                    onCheckedChange={setUseExactDates}
+                  />
+                  <Label htmlFor="exactDates" className="text-white font-medium">
+                    I know the exact dates
+                  </Label>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-white font-medium flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4" />
+                      {useExactDates ? 'Start Date *' : 'Start Month *'}
+                    </Label>
+                    <DatePicker
+                      type={useExactDates ? "date" : "month"}
+                      value={useExactDates ? formData.start_date : formData.start_month}
+                      onChange={(value) => handleInputChange(useExactDates ? 'start_date' : 'start_month', value)}
+                      placeholder={useExactDates ? "Select start date" : "Select start month"}
+                    />
                   </div>
-                )}
+
+                  <div className="space-y-2">
+                    <Label className="text-white font-medium flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4" />
+                      {useExactDates ? 'End Date (optional)' : 'End Month (optional)'}
+                    </Label>
+                    <DatePicker
+                      type={useExactDates ? "date" : "month"}
+                      value={useExactDates ? formData.end_date : formData.end_month}
+                      onChange={(value) => handleInputChange(useExactDates ? 'end_date' : 'end_month', value)}
+                      placeholder={useExactDates ? "Select end date" : "Select end month"}
+                    />
+                  </div>
+                </div>
+                
+                <p className="text-white/60 text-sm">
+                  {useExactDates 
+                    ? "Select specific dates if you know them" 
+                    : "Just pick the months - perfect for longer projects or when dates aren't finalized"
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* Collaboration (Optional) */}
+            <div className="glass-morphism rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Other departments involved? (Optional)
+              </h3>
+              
+              <div className="space-y-3">
+                <p className="text-white/60 text-sm">
+                  Select any other departments that will be working on this with you
+                </p>
+                
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {formData.involved_departments.map((dept) => (
+                    <span
+                      key={dept}
+                      className="glass-morphism rounded-full px-3 py-1 text-sm text-white flex items-center gap-2"
+                    >
+                      {dept}
+                      <button
+                        type="button"
+                        onClick={() => toggleInvolvedDepartment(dept)}
+                        className="hover:text-red-400"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {departments
+                    .filter(dept => dept.name !== formData.department_name && !formData.involved_departments.includes(dept.name))
+                    .map((dept) => (
+                      <button
+                        key={dept.id}
+                        type="button"
+                        onClick={() => toggleInvolvedDepartment(dept.name)}
+                        className="glass-morphism rounded-lg p-3 text-sm text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-2 text-left transition-all duration-200"
+                      >
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: dept.color }}
+                        />
+                        {dept.name}
+                      </button>
+                    ))}
+                </div>
               </div>
             </div>
 
@@ -438,12 +449,12 @@ export default function AddEvent() {
                 {loading ? (
                   <>
                     <div className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full mr-2" />
-                    Creating...
+                    {new URLSearchParams(window.location.search).get('eventId') ? 'Updating...' : 'Creating...'}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    Create Event
+                    {new URLSearchParams(window.location.search).get('eventId') ? 'Update Event' : 'Create Event'}
                   </>
                 )}
               </Button>

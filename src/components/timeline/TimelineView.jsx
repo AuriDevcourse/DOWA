@@ -59,7 +59,7 @@ export default function TimelineView({ events, departments, currentDate, timeRan
                 className="glass-morphism rounded-2xl p-4 min-h-[200px]"
               >
                 <div className="text-center mb-4">
-                  <div className="text-xl font-bold text-white">
+                  <div className="text-lg font-bold text-white">
                     {format(month, 'MMM')}
                   </div>
                   <div className="text-white/60 text-sm">

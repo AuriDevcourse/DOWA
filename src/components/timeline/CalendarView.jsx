@@ -34,21 +34,28 @@ export default function CalendarView({ events, departments, currentDate }) {
 
   return (
     <div className="glass-card rounded-3xl p-6">
-      <h2 className="text-xl font-bold text-white mb-6 text-glow">Calendar View</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-white text-glow">Calendar View</h2>
+        <div className="glass-morphism rounded-full px-4 py-2">
+          <span className="text-white font-medium">{format(currentDate, 'MMMM yyyy')}</span>
+        </div>
+      </div>
       
       {/* Days of week header */}
-      <div className="grid grid-cols-7 gap-2 mb-4">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-          <div key={day} className="text-center text-white/60 font-medium py-2">
-            {day}
-          </div>
-        ))}
+      <div className="glass-morphism rounded-2xl p-4 mb-4">
+        <div className="grid grid-cols-7 gap-3">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+            <div key={day} className="text-center text-white/80 font-semibold py-2 text-sm">
+              {day}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Calendar grid */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {weeks.map((week, weekIndex) => (
-          <div key={weekIndex} className="grid grid-cols-7 gap-2">
+          <div key={weekIndex} className="grid grid-cols-7 gap-3">
             {week.map((day) => {
               const dayEvents = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
@@ -58,39 +65,53 @@ export default function CalendarView({ events, departments, currentDate }) {
               return (
                 <motion.div
                   key={day.toISOString()}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className={`glass-morphism rounded-xl p-2 min-h-[80px] ${
-                    isCurrentMonth ? '' : 'opacity-40'
-                  } ${isToday ? 'ring-2 ring-yellow-400' : ''} ${
-                    isWeekend ? 'bg-gray-500/10' : ''
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: weekIndex * 0.05 + (day.getDay() * 0.01) }}
+                  className={`glass-morphism rounded-2xl p-3 min-h-[100px] transition-all duration-300 hover:scale-105 cursor-pointer group ${
+                    isCurrentMonth ? 'hover:bg-white/5' : 'opacity-50'
+                  } ${isToday ? 'ring-2 ring-yellow-400/60 bg-yellow-400/5' : ''} ${
+                    isWeekend ? 'bg-slate-800/30' : ''
                   }`}
                 >
-                  <div className={`text-sm font-medium mb-1 ${
-                    isToday ? 'text-yellow-400' : isWeekend ? 'text-white/50' : 'text-white/80'
+                  <div className={`text-sm font-semibold mb-2 flex items-center justify-center w-6 h-6 rounded-full ${
+                    isToday 
+                      ? 'bg-yellow-400 text-slate-900' 
+                      : isWeekend 
+                        ? 'text-white/50' 
+                        : 'text-white/90 group-hover:text-white'
                   }`}>
                     {format(day, 'd')}
                   </div>
-                  {!isWeekend && (
+                  
+                  {isCurrentMonth && (
                     <div className="space-y-1">
-                      {dayEvents.slice(0, 2).map((event) => (
-                        <div
+                      {dayEvents.slice(0, 3).map((event, index) => (
+                        <motion.div
                           key={event.id}
-                          className="text-xs p-1 rounded truncate"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 + index * 0.05 }}
+                          className="glass-morphism rounded-lg p-1.5 text-xs hover:scale-105 transition-all duration-200 cursor-pointer"
                           style={{
-                            backgroundColor: `${getDepartmentColor(event.department_name)}20`,
-                            borderLeft: `2px solid ${getDepartmentColor(event.department_name)}`
+                            backgroundColor: `${getDepartmentColor(event.department_name)}15`,
+                            borderLeft: `3px solid ${getDepartmentColor(event.department_name)}`
                           }}
                           title={`${event.title} - ${event.department_name}`}
                         >
-                          <div className="text-white/90 font-medium truncate">
+                          <div className="text-white/90 font-medium truncate leading-tight">
                             {event.title}
                           </div>
-                        </div>
+                          <div className="text-white/60 text-xs truncate">
+                            {event.department_name}
+                          </div>
+                        </motion.div>
                       ))}
-                      {dayEvents.length > 2 && (
-                        <div className="text-xs text-white/50 text-center">
-                          +{dayEvents.length - 2} more
+                      {dayEvents.length > 3 && (
+                        <div className="glass-morphism rounded-lg p-1 text-center">
+                          <span className="text-xs text-white/60 font-medium">
+                            +{dayEvents.length - 3} more
+                          </span>
                         </div>
                       )}
                     </div>

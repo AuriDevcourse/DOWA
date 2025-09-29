@@ -2,5 +2,14 @@
 
 
 export function createPageUrl(pageName: string) {
-    return '/' + pageName.toLowerCase().replace(/ /g, '-');
+    // Handle specific page name mappings
+    const pageMap: { [key: string]: string } = {
+        'DepartmentTimeline': '/department-timeline',
+        'ProcessImport': '/processimport',
+        'AddEvent': '/addevent',
+        'Departments': '/departments',
+        'Settings': '/settings'
+    };
+    
+    return pageMap[pageName] || ('/' + pageName.toLowerCase().replace(/ /g, '-'));
 }
