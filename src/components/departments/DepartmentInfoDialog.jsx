@@ -177,53 +177,54 @@ export default function DepartmentInfoDialog({ department, isOpen, onClose, onUp
   const currentDepartment = isEditMode ? editedDepartment : department;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-white/30 text-white max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold"
-                style={{ backgroundColor: department.color }}
-              >
-                {department.name.charAt(0)}
-              </div>
-              {department.name}
-              {isEditMode && (
-                <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">
-                  Edit Mode
-                </span>
-              )}
-            </div>
-            
-            {/* Edit Button - Only for Marketing Department */}
-            {department.name === "Marketing" && (
-              <div className="flex items-center gap-2">
-                {isEditMode ? (
-                  <button
-                    onClick={handleExitEditMode}
-                    className="glass-morphism rounded-lg px-3 py-1 hover:opacity-80 transition-all duration-300 text-white hover:text-white/80"
-                    title="Exit Edit Mode"
-                  >
-                    <span className="text-xs">Exit Edit</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleEditClick}
-                    className="glass-morphism rounded-lg p-2 hover:opacity-80 transition-all duration-300 text-white hover:text-white/80 glow-blue"
-                    title="Edit Department Details"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="glass-card border-white/30 text-white max-w-4xl" style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold"
+                  style={{ backgroundColor: department.color }}
+                >
+                  {department.name.charAt(0)}
+                </div>
+                {department.name}
+                {isEditMode && (
+                  <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">
+                    Edit Mode
+                  </span>
                 )}
               </div>
-            )}
-          </DialogTitle>
-        </DialogHeader>
+              
+              {/* Edit Button - Only for Marketing Department */}
+              {department.name === "Marketing" && (
+                <div className="flex items-center gap-2">
+                  {isEditMode ? (
+                    <button
+                      onClick={handleExitEditMode}
+                      className="glass-morphism rounded-lg px-3 py-1 hover:opacity-80 transition-all duration-300 text-white hover:text-white/80"
+                      title="Exit Edit Mode"
+                    >
+                      <span className="text-xs">Exit Edit</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleEditClick}
+                      className="p-2 hover:opacity-70 transition-all duration-300 text-white hover:text-white/80"
+                      title="Edit Department Details"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-6 py-4 overflow-y-auto flex-1 pr-2 glass-scroll">
-          {/* Description */}
-          <div>
+          <div className="space-y-6 py-4 overflow-y-auto flex-1 pr-2 glass-scroll">
+            {/* Description */}
+            <div>
             <h4 className="font-medium text-white mb-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4" />
@@ -458,10 +459,11 @@ export default function DepartmentInfoDialog({ department, isOpen, onClose, onUp
           </div>
         </div>
       </DialogContent>
+      </Dialog>
 
       {/* Password Prompt Dialog */}
       <Dialog open={showPasswordPrompt} onOpenChange={handleCancelPassword}>
-        <DialogContent className="glass-card border-white/30 text-white max-w-md">
+        <DialogContent className="glass-card border-white/30 text-white max-w-md" style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)' }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Lock className="w-5 h-5 text-yellow-400" />
@@ -510,7 +512,7 @@ export default function DepartmentInfoDialog({ department, isOpen, onClose, onUp
 
       {/* Description Edit Dialog */}
       <Dialog open={showDescriptionEdit} onOpenChange={() => setShowDescriptionEdit(false)}>
-        <DialogContent className="glass-card border-white/30 text-white max-w-2xl">
+        <DialogContent className="glass-card border-white/30 text-white max-w-2xl" style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)' }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Info className="w-5 h-5 text-blue-400" />
@@ -549,7 +551,7 @@ export default function DepartmentInfoDialog({ department, isOpen, onClose, onUp
 
       {/* KPIs Edit Dialog */}
       <Dialog open={showKPIsEdit} onOpenChange={() => setShowKPIsEdit(false)}>
-        <DialogContent className="glass-card border-white/30 text-white max-w-4xl">
+        <DialogContent className="glass-card border-white/30 text-white max-w-4xl" style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)' }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Target className="w-5 h-5 text-green-400" />
@@ -641,7 +643,7 @@ export default function DepartmentInfoDialog({ department, isOpen, onClose, onUp
 
       {/* Tools Edit Dialog */}
       <Dialog open={showToolsEdit} onOpenChange={() => setShowToolsEdit(false)}>
-        <DialogContent className="glass-card border-white/30 text-white max-w-3xl">
+        <DialogContent className="glass-card border-white/30 text-white max-w-3xl" style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)' }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Wrench className="w-5 h-5 text-purple-400" />
@@ -718,7 +720,7 @@ export default function DepartmentInfoDialog({ department, isOpen, onClose, onUp
 
       {/* Team Members Edit Dialog */}
       <Dialog open={showTeamEdit} onOpenChange={() => setShowTeamEdit(false)}>
-        <DialogContent className="glass-card border-white/30 text-white max-w-4xl">
+        <DialogContent className="glass-card border-white/30 text-white max-w-4xl" style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)' }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Users className="w-5 h-5 text-orange-400" />
@@ -818,6 +820,6 @@ export default function DepartmentInfoDialog({ department, isOpen, onClose, onUp
         isOpen={showMemberDetail}
         onClose={() => setShowMemberDetail(false)}
       />
-    </Dialog>
+    </>
   );
 }

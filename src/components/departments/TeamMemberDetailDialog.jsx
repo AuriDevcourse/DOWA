@@ -49,7 +49,7 @@ export default function TeamMemberDetailDialog({ member, department, allDepartme
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-white/30 text-white max-w-2xl">
+      <DialogContent className="glass-card border-white/30 text-white max-w-2xl" style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             {/* Profile Picture */}
@@ -79,7 +79,7 @@ export default function TeamMemberDetailDialog({ member, department, allDepartme
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 overflow-y-auto flex-1 pr-2 glass-scroll">
           {/* Contact Information */}
           <div>
             <h4 className="font-medium text-white mb-3 flex items-center gap-2">

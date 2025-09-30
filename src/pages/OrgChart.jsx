@@ -28,6 +28,9 @@ export default function OrgChart() {
     const executiveAssistants = [];
     const departmentHeads = [];
     
+    // Specific C-level names to include
+    const cLevelNames = ['avnit', 'sadia', 'thomas', 'benjamin'];
+    
     departments.forEach(dept => {
       if (dept.team_members) {
         dept.team_members.forEach(member => {
@@ -39,17 +42,20 @@ export default function OrgChart() {
           
           if (member.role) {
             const role = member.role.toLowerCase();
-            // C-level executives (including CXO)
-            if (role.includes('ceo') || role.includes('coo') || role.includes('cco') || role.includes('cxo') || role.includes('chief')) {
+            const name = member.name.toLowerCase();
+            
+            // C-level executives - only Avnit, Sadia, Thomas, and Benjamin
+            if (cLevelNames.some(cName => name.includes(cName))) {
               cLevel.push(memberWithDept);
             }
             // Executive assistants
             else if (role.includes('executive assistant')) {
               executiveAssistants.push(memberWithDept);
             }
-            // Department heads (but not C-level)
-            else if (role.includes('head of') || role.includes('head,') || 
-                     (role.includes('head') && !role.includes('growth')) ||
+            // Department heads (including other chiefs and heads)
+            else if (role.includes('chief') || role.includes('ceo') || role.includes('coo') || 
+                     role.includes('cco') || role.includes('cxo') || role.includes('head of') || 
+                     role.includes('head,') || (role.includes('head') && !role.includes('growth')) ||
                      role.includes('manager') && dept.name === 'Program') {
               departmentHeads.push(memberWithDept);
             }
@@ -58,12 +64,12 @@ export default function OrgChart() {
       }
     });
 
-    // Sort C-level by hierarchy
+    // Sort C-level by specific order: Avnit, Sadia, Thomas, Benjamin
     cLevel.sort((a, b) => {
-      const roleOrder = { 'ceo': 0, 'cco': 1, 'coo': 2, 'cxo': 3, 'chief': 4 };
-      const aOrder = Object.keys(roleOrder).find(key => a.role.toLowerCase().includes(key));
-      const bOrder = Object.keys(roleOrder).find(key => b.role.toLowerCase().includes(key));
-      return (roleOrder[aOrder] || 99) - (roleOrder[bOrder] || 99);
+      const nameOrder = { 'avnit': 0, 'sadia': 1, 'thomas': 2, 'benjamin': 3 };
+      const aOrder = Object.keys(nameOrder).find(key => a.name.toLowerCase().includes(key));
+      const bOrder = Object.keys(nameOrder).find(key => b.name.toLowerCase().includes(key));
+      return (nameOrder[aOrder] || 99) - (nameOrder[bOrder] || 99);
     });
 
     // Sort department heads alphabetically by department

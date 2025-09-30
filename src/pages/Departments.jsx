@@ -38,6 +38,7 @@ import {
 import { Department, TimelineEvent } from "@/api/entities";
 import TeamMembersDialog from "@/components/departments/TeamMembersDialog";
 import DepartmentInfoDialog from "@/components/departments/DepartmentInfoDialog";
+import GoogleCalendarSync from "@/components/GoogleCalendarSync";
 import { format } from "date-fns";
 // import DatePicker from "@/components/ui/DatePicker";
 
@@ -315,6 +316,11 @@ export default function Departments() {
     };
   };
 
+  // Handle Google Calendar sync
+  const handleGoogleSync = (syncedEvents) => {
+    setUpcomingDates(syncedEvents);
+  };
+
   const handleUpdateTeam = async (updatedDepartment) => {
     try {
       await Department.update(updatedDepartment.id, { team_members: updatedDepartment.team_members });
@@ -479,9 +485,9 @@ export default function Departments() {
 
   return (
     <ErrorBoundary>
-      {/* Floating Sidebar - Important Upcoming Dates */}
-      <div className="fixed top-24 right-4 w-72 z-50">
-        <div className="glass-card rounded-2xl p-4 shadow-2xl">
+      {/* Desktop Floating Sidebar - Important Upcoming Dates */}
+      <div className="fixed top-24 right-2 sm:right-4 w-64 sm:w-72 lg:w-80 xl:w-72 z-50 hidden md:block">
+        <div className="glass-card rounded-2xl p-4 shadow-2xl max-h-[calc(100vh-8rem)] overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-glass">Important Dates</h2>
             <button
@@ -492,6 +498,9 @@ export default function Departments() {
               <Plus className="w-4 h-4" />
             </button>
           </div>
+          
+          {/* Google Calendar Sync */}
+          <GoogleCalendarSync onSync={handleGoogleSync} />
           
           <div className="space-y-2">
             {/* Add New Date Form */}
@@ -683,12 +692,109 @@ export default function Departments() {
         </div>
       </div>
 
-      <div className="px-6 py-8">
-      <div className="max-w-7xl mx-auto">
+      {/* Mobile Sidebar - Important Upcoming Dates */}
+      <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
+        <div className="glass-card rounded-2xl p-4 shadow-2xl max-h-48 overflow-y-auto">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-glass">Important Dates</h2>
+            <button
+              onClick={() => setShowAddDate(true)}
+              className="glass-morphism rounded-lg p-2 hover:opacity-80 transition-all duration-300 text-white hover:text-white/80"
+              title="Add New Date"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="space-y-2">
+            {/* Add New Date Form */}
+            {showAddDate && (
+              <div className="glass-morphism rounded-lg p-3 border-2 border-green-500/30">
+                <div className="space-y-2">
+                  <DatePicker
+                    value={newDateData?.date ? new Date(newDateData.date).toISOString().split('T')[0] : ''}
+                    onChange={(dateValue) => {
+                      const dateObj = new Date(dateValue);
+                      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                      const dayOptions = { weekday: 'long' };
+                      const newDate = {
+                        date: dateObj.toLocaleDateString('en-US', options),
+                        day: dateObj.toLocaleDateString('en-US', dayOptions),
+                        event: newDateData?.event || '',
+                        type: newDateData?.type || 'meeting',
+                        icon: newDateData?.icon || '📅'
+                      };
+                      setNewDateData(newDate);
+                    }}
+                    placeholder="Select date"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Event name"
+                    onChange={(e) => {
+                      setNewDateData(prev => ({ ...prev, event: e.target.value }));
+                    }}
+                    className="glass-morphism w-full px-2 py-1 text-xs text-white bg-white/10 border border-white/20 rounded focus:outline-none focus:ring-1 focus:ring-green-400"
+                    autoFocus
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => {
+                        if (newDateData && newDateData.event && newDateData.date) {
+                          const newDates = [...upcomingDates, newDateData];
+                          saveDates(newDates);
+                          setShowAddDate(false);
+                          setNewDateData(null);
+                        }
+                      }}
+                      className="glass-morphism px-3 py-1 text-xs text-green-400 hover:text-green-300 rounded transition-colors"
+                    >
+                      Add
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowAddDate(false);
+                        setNewDateData(null);
+                      }}
+                      className="glass-morphism px-3 py-1 text-xs text-gray-400 hover:text-gray-300 rounded transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {upcomingDates.slice(0, 3).map((item, index) => (
+              <div key={index} className="glass-morphism rounded-lg p-2 hover:opacity-90 transition-all duration-300">
+                <div className="flex items-start gap-2">
+                  <span className="text-sm">{item.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-white/60 mb-1 truncate">
+                      {item.date} • {item.day}
+                    </div>
+                    <div className="text-white font-medium text-xs leading-tight truncate">
+                      {item.event}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {upcomingDates.length > 3 && (
+              <div className="text-center text-xs text-white/60 pt-2">
+                +{upcomingDates.length - 3} more dates
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="px-4 sm:px-6 py-8 pb-20 md:pb-8">
+      <div className="max-w-7xl mx-auto pr-0 md:pr-64 lg:pr-80 xl:pr-72">
 
         {/* Main Content */}
         <div>
-        <div className="glass-card rounded-3xl p-8 mb-8">
+        <div className="glass-card rounded-3xl p-4 sm:p-8 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-glass mb-4">Department Overview</h1>
             <div className="text-glass-subtle">
@@ -811,7 +917,7 @@ export default function Departments() {
           )}
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
           {departments && departments.length > 0 ? departments.map((department, index) => {
             const stats = getDepartmentStats(department);
             const teamCount = department.team_members?.length || 0;
@@ -829,7 +935,7 @@ export default function Departments() {
                   scale: isHighlighted ? 1.02 : 1
                 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`glass-card rounded-3xl p-6 cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                className={`glass-card rounded-3xl p-4 sm:p-6 cursor-pointer hover:opacity-90 transition-all duration-300 ${
                   isHighlighted ? 'glow-red ring-2 ring-red-500/50' : 'glow-purple'
                 }`}
                 onClick={() => openInfoDialog(department)}
@@ -845,7 +951,7 @@ export default function Departments() {
                       {React.createElement(getDepartmentIcon(department.name), {
                         className: "w-5 h-5 text-glass-muted"
                       })}
-                      <h3 className="text-xl font-bold text-glass">{department.name}</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-glass truncate">{department.name}</h3>
                     </div>
                     
                     {/* Right Column - Action Icons */}

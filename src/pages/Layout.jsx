@@ -3,11 +3,12 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Calendar, Building2, Settings, Users } from "lucide-react";
+import { Calendar, Building2, Settings, Users, Gift } from "lucide-react";
 
 const navigationItems = [
   { title: "Departments", url: createPageUrl("Departments"), icon: Building2 },
   { title: "Team", url: createPageUrl("Team"), icon: Users },
+  { title: "Employee Benefits", url: createPageUrl("EmployeeBenefits"), icon: Gift },
   { title: "Settings", url: createPageUrl("Settings"), icon: Settings },
 ];
 
