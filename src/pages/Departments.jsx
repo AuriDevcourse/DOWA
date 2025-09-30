@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { useNavigate, Link } from "react-router-dom";
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 // import { Department, TimelineEvent } from "@/api/entities";
@@ -433,8 +436,12 @@ export default function Departments() {
       ]);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       setDepartments(departmentsData || []);
       setEvents(eventsData || []);
+=======
+      setEvents([]);
+>>>>>>> Stashed changes
 =======
       setEvents([]);
 >>>>>>> Stashed changes
