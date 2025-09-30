@@ -3,7 +3,12 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+<<<<<<< Updated upstream
 import { Calendar, Building2, Settings, Users, Gift } from "lucide-react";
+=======
+import { Calendar, Building2, Settings, Users } from "lucide-react";
+import UpdateNotification from "@/components/UpdateNotification";
+>>>>>>> Stashed changes
 
 const navigationItems = [
   { title: "Departments", url: createPageUrl("Departments"), icon: Building2 },
@@ -12,7 +17,7 @@ const navigationItems = [
   { title: "Settings", url: createPageUrl("Settings"), icon: Settings },
 ];
 
-export default function Layout({ children, currentPageName }) {
+export default function Layout({ children }) {
   const location = useLocation();
 
   return (
@@ -118,6 +123,8 @@ export default function Layout({ children, currentPageName }) {
       <main className="relative z-10 pt-20">
         {children}
       </main>
+      
+      <UpdateNotification />
     </div>
   );
 }

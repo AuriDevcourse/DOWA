@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
+<<<<<<< Updated upstream
 import { useNavigate, Link } from "react-router-dom";
+=======
+// import { Department, TimelineEvent } from "@/api/entities";
+import { Link, useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Calendar, Users, TrendingUp, Wrench, Info, UploadCloud } from "lucide-react";
+>>>>>>> Stashed changes
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -287,12 +294,146 @@ export default function Departments() {
 
   const loadData = async () => {
     try {
-      const [departmentsData, eventsData] = await Promise.all([
-        Department.list(),
-        TimelineEvent.list()
+      // Temporarily comment out API calls
+      // const [departmentsData, eventsData] = await Promise.all([
+      //   Department.list(),
+      //   TimelineEvent.list()
+      // ]);
+      // setDepartments(departmentsData);
+      // setEvents(eventsData);
+      
+      // Use real TechBBQ data
+      setDepartments([
+        {
+          id: 1,
+          name: "Management",
+          color: "#8B5CF6",
+          description: "Executive leadership and strategic direction",
+          team_members: [
+            { name: "Avnit Singh", email: "asg@techbbq.org", role: "Chief Executive Officer", type: "Employee" },
+            { name: "Sam Eshrati", email: "ses@techbbq.org", role: "Chief Operating Officer & Chief Engagement Officer", type: "Employee" },
+            { name: "Benjamin Notlev", email: "bno@techbbq.org", role: "Chief Commercial Officer & Chief Investment Officer", type: "Employee" }
+          ],
+          tools_used: ["Strategic Planning", "Leadership", "Decision Making"]
+        },
+        {
+          id: 2,
+          name: "Marketing",
+          color: "#10B981",
+          description: "Brand promotion, growth analytics, and digital design",
+          team_members: [
+            { name: "Vera Liscinska", email: "vli@techbbq.org", role: "Head of Marketing", type: "Employee" },
+            { name: "Maria Krupa", email: "mak@techbbq.org", role: "Growth & Data Analytics Lead", type: "Employee" },
+            { name: "Auri Baciauskas", email: "aba@techbbq.org", role: "Senior Digital Designer", type: "Employee" },
+            { name: "Chloe Passerât de la Chapelle", email: "cpc@techbbq.org", role: "Marketing Content Lead", type: "Employee" }
+          ],
+          tools_used: ["Google Analytics", "Adobe Creative Suite", "Content Management", "Data Analysis"]
+        },
+        {
+          id: 3,
+          name: "HR",
+          color: "#F59E0B",
+          description: "Human resources and talent management",
+          team_members: [
+            { name: "Maja Pavlek", email: "mpa@techbbq.org", role: "Head of HR", type: "Employee" }
+          ],
+          tools_used: ["HRIS", "Recruitment", "Performance Management"]
+        },
+        {
+          id: 4,
+          name: "Partnerships",
+          color: "#3B82F6",
+          description: "Strategic partnerships and business development",
+          team_members: [
+            { name: "Mikkel Schiott", email: "mik@techbbq.org", role: "Head of Partnerships", type: "Employee" },
+            { name: "Tansu Kjerimi", email: "tkj@techbbq.org", role: "Global Partnership Manager", type: "Employee" },
+            { name: "Anne-Sophie Pedersen", email: "asp@techbbq.org", role: "Partnership Manager", type: "Employee" },
+            { name: "Roxy Dat", email: "rad@techbbq.org", role: "SDR & Community Partnership Manager", type: "Employee" },
+            { name: "Amalie Berre Eriksen", email: "ame@techbbq.org", role: "Partnership Success Manager", type: "Employee" }
+          ],
+          tools_used: ["CRM", "Partnership Management", "Business Development", "Community Building"]
+        },
+        {
+          id: 5,
+          name: "Events",
+          color: "#EF4444",
+          description: "Event planning, coordination, and execution",
+          team_members: [
+            { name: "Joanna Opoka", email: "jop@techbbq.org", role: "Senior Project Manager", type: "Employee" },
+            { name: "Mette Baastrup", email: "meb@techbbq.org", role: "Event Manager", type: "Employee" }
+          ],
+          tools_used: ["Event Management", "Project Planning", "Vendor Coordination", "Logistics"]
+        },
+        {
+          id: 6,
+          name: "PR",
+          color: "#06B6D4",
+          description: "Public relations and communications",
+          team_members: [
+            { name: "Keyvan T. Bamdej", email: "kba@techbbq.org", role: "Head of PR & Communications", type: "Employee" },
+            { name: "Mikael Hansen", email: "mkh@techbbq.org", role: "PR & Communications Manager", type: "Employee" }
+          ],
+          tools_used: ["Media Relations", "Content Creation", "Communications Strategy", "Press Releases"]
+        },
+        {
+          id: 7,
+          name: "Program",
+          color: "#84CC16",
+          description: "Program development and coordination",
+          team_members: [
+            { name: "Pedro Granacha", email: "pmg@techbbq.org", role: "Program Manager", type: "Employee" },
+            { name: "Inigo Casillas", email: "ica@techbbq.org", role: "Program Coordinator", type: "Employee" }
+          ],
+          tools_used: ["Program Management", "Coordination", "Planning", "Execution"]
+        },
+        {
+          id: 8,
+          name: "Finance",
+          color: "#F97316",
+          description: "Financial management and investor relations",
+          team_members: [
+            { name: "Stephan Evon", email: "sev@techbbq.org", role: "Head of Finance", type: "Employee" },
+            { name: "Rares Bagyio", email: "rab@techbbq.org", role: "Head of Investor Relations", type: "Employee" },
+            { name: "Allan N. Hadjimihalovic", email: "alh@techbbq.org", role: "Project Controller", type: "Employee" }
+          ],
+          tools_used: ["Financial Planning", "Accounting", "Investor Relations", "Budget Control"]
+        },
+        {
+          id: 9,
+          name: "Operations",
+          color: "#EC4899",
+          description: "Operational support and executive assistance",
+          team_members: [
+            { name: "Sadia Beg", email: "sab@techbbq.org", role: "Head of Operations", type: "Employee" },
+            { name: "Sandra B. Frandsen", email: "sfr@techbbq.org", role: "Executive Assistant", type: "Employee" },
+            { name: "Malou Bonding Wichmann", email: "mbw@techbbq.org", role: "Executive Personal Assistant", type: "Employee" },
+            { name: "Shabana Naseri", email: "sna@techbbq.org", role: "Executive Personal Assistant", type: "Employee" },
+            { name: "Carol Commey", email: "cac@techbbq.org", role: "Executive Assistant", type: "Employee" }
+          ],
+          tools_used: ["Operations Management", "Administrative Support", "Process Optimization", "Executive Support"]
+        },
+        {
+          id: 10,
+          name: "Project Management",
+          color: "#6366F1",
+          description: "Project planning, execution, and leadership",
+          team_members: [
+            { name: "Thomas Ebrup", email: "teb@techbbq.org", role: "Head of Projects", type: "Employee" },
+            { name: "Harry Justus", email: "hju@techbbq.org", role: "Senior Project Manager", type: "Employee" },
+            { name: "Jan Thordsen", email: "jan@techbbq.org", role: "Project Manager", type: "Employee" },
+            { name: "Dianne A. Binesse", email: "dib@techbbq.org", role: "Project Manager", type: "Employee" },
+            { name: "Sara Sørensen", email: "sgs@techbbq.org", role: "Project Manager", type: "Employee" },
+            { name: "Charles Kinga", email: "chk@techbbq.org", role: "Project Leader", type: "Employee" }
+          ],
+          tools_used: ["Project Management", "Agile", "Planning", "Team Leadership", "Resource Management"]
+        }
       ]);
+<<<<<<< Updated upstream
       setDepartments(departmentsData || []);
       setEvents(eventsData || []);
+=======
+      setEvents([]);
+>>>>>>> Stashed changes
     } catch (error) {
       console.error("Error loading data:", error);
       // Set empty arrays as fallback to prevent crashes
@@ -323,8 +464,15 @@ export default function Departments() {
 
   const handleUpdateTeam = async (updatedDepartment) => {
     try {
-      await Department.update(updatedDepartment.id, { team_members: updatedDepartment.team_members });
-      loadData();
+      // await Department.update(updatedDepartment.id, { team_members: updatedDepartment.team_members });
+      // loadData();
+      
+      // Update local state directly for now
+      setDepartments(prev => prev.map(dept =>
+        dept.id === updatedDepartment.id
+          ? { ...dept, team_members: updatedDepartment.team_members }
+          : dept
+      ));
     } catch (error) {
       console.error("Error updating team:", error);
       alert("Failed to update team members. Please try again.");

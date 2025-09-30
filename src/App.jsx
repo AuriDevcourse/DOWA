@@ -1,4 +1,5 @@
 import './App.css'
+<<<<<<< Updated upstream
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from "@/components/ui/toaster"
 import Header from "@/components/layout/Header.jsx"
@@ -30,6 +31,32 @@ function App() {
         </main>
         <UpdateTracker />
       </div>
+=======
+import { Routes, Route } from 'react-router-dom'
+import { Toaster } from '@/components/ui/toaster'
+import Layout from '@/pages/Layout.jsx'
+import Departments from '@/pages/Departments.jsx'
+import DepartmentTimeline from '@/pages/DepartmentTimeline.jsx'
+import Team from '@/pages/Team.jsx'
+import Settings from '@/pages/Settings.jsx'
+import AddEvent from '@/pages/AddEvent.jsx'
+import Import from '@/pages/Import.jsx'
+import ProcessImport from '@/pages/ProcessImport.jsx'
+
+function App() {
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<Layout><Departments /></Layout>} />
+        <Route path="/departments" element={<Layout><Departments /></Layout>} />
+        <Route path="/department-timeline" element={<Layout><DepartmentTimeline /></Layout>} />
+        <Route path="/team" element={<Layout><Team /></Layout>} />
+        <Route path="/settings" element={<Layout><Settings /></Layout>} />
+        <Route path="/add-event" element={<Layout><AddEvent /></Layout>} />
+        <Route path="/import" element={<Layout><Import /></Layout>} />
+        <Route path="/process-import" element={<Layout><ProcessImport /></Layout>} />
+      </Routes>
+>>>>>>> Stashed changes
       <Toaster />
     </BrowserRouter>
   )
