@@ -8,6 +8,9 @@ import { Calendar, Building2, Settings, Users, Gift } from "lucide-react";
 =======
 import { Calendar, Building2, Settings, Users } from "lucide-react";
 import UpdateNotification from "@/components/UpdateNotification";
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 const navigationItems = [
